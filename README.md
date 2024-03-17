@@ -1,56 +1,58 @@
 # CST_reconstruct temporal networks
 
-#### 介绍
-基于压缩感知理论，利用传播数据，进行网络重构
+#### Introduction
+Based on compressive sensing theory, reconstruct network using propagation data(SIS/CP).
 
 
-#### 内容说明
+#### Content Description
 
-1.  `reconstruct dynamic network`：时序网络重构
-2.  `reconstruct static network`：静态网络重构
+1.  `reconstruct dynamic network`：Temporal network reconstruction
+2.  `reconstruct static network`：Static network reconstruction
 
 
-#### 使用说明
-    `reconstruct dynamic network`中实现了对生成动态网络（`ER`,`BA`,`WS`...）和真实动态网络的引入，实现了在`SIS`动力学和`CP`动力学下的传播与重构。
-    可以在`main.py`文件中设置。
-##### 1. 系统参数设置
+#### Usage
+    In `reconstruct dynamic network`, it implements the introduction of generated dynamic networks (`ER`, `BA`, `WS`, etc.) and real dynamic networks, and realizes propagation and reconstruction under SIS dynamics and CP dynamics. <br>
+    Settings can be configured in the main.py file.
+##### 1. System Parameter Settings
 
 ```
-n_nodes = 500 # 结点数目
+n_nodes = 500 # Number of nodes
 p = 0.03  # ER:p BA:k=n_nodes*p
-time_steps = 30 # 模拟传播和重构的时间步
-num_simulations = 5000  # 独立传播次数
-n0 = 30 # 初始感染人数
+time_steps = 30 # Time steps for simulation of propagation and reconstruction
+num_simulations = 5000  # Number of independent propagation simulations
+n0 = 30 # Initial number of infected individuals
 ```
-##### 2. 生成网络 or 真实网络？
-生成网络
+##### 2. Generative Dynamic Network or Real Dynamic Network?
+Generative Dynamic Network
 ```
 network = generate_networks.DynamicNetwork(n_nodes, p,'ER','Random') # Generative dynamic networks...#ER\BA\WS\ZK...
 network.evolve(time_steps)
 ```
-真实网络 需要在`generate_networks.Real_DynamicNetwork`手动检查、修改。
+Real Dynamic Network <br>
+It needs to be manually checked and modified in `generate_networks.Real_DynamicNetwork`.
+
 ```
 network = generate_networks.Real_DynamicNetwork('your file name.txt') # If you want reconstruct real dynamic networks...
 ```
-##### 3. 传播
-SIS动力学
+##### 3. Propagation
+SIS dynamics
 ```
 model = SISModel(network,time_steps,num_simulations,n0=n0)  # SIS dynamics
 ```
 
-CP动力学
+CP dynamics
 
 ```
 model = CPModel(network,time_steps,num_simulations,n0=n0)  # CP dynamics
 ```
 
-##### 4. 重构 t=t* 时的网络结构
+##### 4. Reconstruct the network structure at t=t*
 
 ```
 choose_time = 3
 G_reconstruct = reconstruction(model,choose_time)
 ```
-文件保存
+File saving
 
 ```
 G = network.graph_history[choose_time]
@@ -58,8 +60,8 @@ nx.write_adjlist(G, "G.adjlist")
 nx.write_adjlist(G_reconstruct, "G_reconstruct.adjlist")
 ```
 
-##### 5. 绘图
-- 拓扑对比图
+##### 5. Plotting
+- topology comparison graph
 
 ```
 fig = plt.figure(figsize=(8,8),dpi=400)
@@ -77,30 +79,29 @@ ax4.matshow(nx.to_numpy_matrix(G_reconstruct),cmap=plt.cm.gray)
 plt.show()
 ```
 
-- 分布对比图（度分布、聚类系数分布图、介数中心性分布图、接近中心性分布图）
+- Distribution comparison graph (degree distribution, clustering coefficient distribution, betweenness centrality distribution, closeness centrality distribution)
 
 ```
-# 计算度分布  
+# Calculate degree distribution
 degree_G0 = nx.degree(G)  
 degree_G1 = nx.degree(G_reconstruct)  
   
-# 计算聚类系数分布  
+# Calculate clustering coefficient distribution  
 clustering_G0 = nx.clustering(G)  
 clustering_G1 = nx.clustering(G_reconstruct)  
   
-# 计算介数中心性  
+# Calculate betweenness centrality 
 betweenness_G0 = nx.betweenness_centrality(G)  
 betweenness_G1 = nx.betweenness_centrality(G_reconstruct)  
   
-# 计算接近中心性  
+# Calculate closeness centrality
 closeness_G0 = nx.closeness_centrality(G)  
 closeness_G1 = nx.closeness_centrality(G_reconstruct)  
 
   
-# 绘制度分布图  
+# Plot
 plt.figure(figsize=(12, 12))  
 
-# 度分布
 plt.subplot(4, 1, 1)
 degree_dist_G0 = [degree for node, degree in degree_G0]
 degree_dist_G1 = [degree for node, degree in degree_G1]
@@ -110,7 +111,7 @@ plt.title('Degree Distribution')
 plt.xlabel('Degree')
 plt.ylabel('Frequency')
 plt.legend()
-# 聚类系数分布图
+
 plt.subplot(4, 1, 2)
 plt.hist(list(clustering_G0.values()), bins=20, alpha=0.5, color='b', label='G_origin')
 plt.hist(list(clustering_G1.values()), bins=20, alpha=0.5, color='r', label='G_reconstruct')
@@ -118,7 +119,7 @@ plt.title('Clustering Coefficient Distribution')
 plt.xlabel('Clustering Coefficient')
 plt.ylabel('Frequency')
 plt.legend()
-# 介数中心性分布图
+
 plt.subplot(4, 1, 3)
 plt.hist(list(betweenness_G0.values()), bins=20, alpha=0.5, color='b', label='G_origin')
 plt.hist(list(betweenness_G1.values()), bins=20, alpha=0.5, color='r', label='G_reconstruct')
@@ -126,7 +127,7 @@ plt.title('Betweenness Centrality Distribution')
 plt.xlabel('Betweenness Centrality')
 plt.ylabel('Frequency')
 plt.legend()
-# 接近中心性分布图  
+
 plt.subplot(4, 1, 4)
 plt.hist(list(closeness_G0.values()), bins=20, alpha=0.5, color='b', label='G_origin')
 plt.hist(list(closeness_G1.values()), bins=20, alpha=0.5, color='r', label='G_reconstruct')
@@ -137,10 +138,10 @@ plt.legend()
 plt.tight_layout()  
 plt.show()
 ```
-##### 6. 准确性计算
-    SRAC：总体成功率 <br> 
-    SREL：重构存在边成功率 <br> 
-    SRNC：重构空边存在率 <br> 
+##### 6. Accuracy Calculation
+    SRAC：Success Rate for All Connections <br> 
+    SREL：Success Rate for Existing Links <br> 
+    SRNC：Success Rate for None Connections <br> 
 
 ```
 G_matrix = nx.to_numpy_matrix(G)
@@ -150,8 +151,8 @@ print("SREL:",SREL(G_matrix,G_reconstruct_matrix))
 print("SRNC:",SRNC(G_matrix,G_reconstruct_matrix))
 print("CR:",CR(G_reconstruct_matrix))
 ```
-##### 7. 重构连续时间的网络
-`reconstruct dynamic network\read_excel`可读取绘图
+##### 7. Reconstruct continuous-time networks
+You can read`reconstruct dynamic network\read_excel` for plotting.
 
 ```
 results = pd.DataFrame(columns=['choose_time', '_SRAC', '_SREL', '_SRNC'])
@@ -174,7 +175,7 @@ print("reconstruct simulated time(hr):",(reconstruct_times1-reconstruct_times0)/
 results.to_excel('results_SIS_BA.xlsx', index=False)
 ```
 
-##### 8. 对于不同度的网络重构
-运行`reconstruct dynamic network\main_for_k` <br>
-`reconstruct dynamic network\read_excel`可读取绘图 <br>
-参数含义与`main`相同，修改`p_all`得到平均度范围。
+##### 8. Network Reconstruction for Different Degrees
+Run `reconstruct dynamic network\main_for_k` <br>
+You can read `reconstruct dynamic network\read_excel`for plotting. <br>
+ame parameters as `main`, modify the `p_all` to get the average degree range.
