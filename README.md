@@ -139,9 +139,9 @@ plt.tight_layout()
 plt.show()
 ```
 ##### 6. Accuracy Calculation
-    SRAC：Success Rate for All Connections <br> 
-    SREL：Success Rate for Existing Links <br> 
-    SRNC：Success Rate for None Connections <br> 
+    SRAC：Success Rate for All Connections 
+    SREL：Success Rate for Existing Links 
+    SRNC：Success Rate for None Connections 
 
 ```
 G_matrix = nx.to_numpy_matrix(G)
