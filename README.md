@@ -11,8 +11,10 @@ Based on compressive sensing theory, reconstruct network using propagation data(
 
 
 #### Usage
-    In `reconstruct dynamic network`, it implements the introduction of generated dynamic networks (`ER`, `BA`, `WS`, etc.) and real dynamic networks, and realizes propagation and reconstruction under SIS dynamics and CP dynamics. <br>
+
+    In `reconstruct dynamic network`, it implements the introduction of generated dynamic networks (`ER`, `BA`, `WS`, etc.) and real dynamic networks, and realizes propagation and reconstruction under SIS dynamics and CP dynamics. 
     Settings can be configured in the main.py file.
+    
 ##### 1. System Parameter Settings
 
 ```
