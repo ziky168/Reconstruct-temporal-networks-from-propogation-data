@@ -15,6 +15,10 @@ from numba import jit
 from Spreading import SISModel,CPModel
 from math import exp
 
+Theta = 0.25
+Delta = 0.35
+Thetas = []
+Deltas = []
 
 def reconstruction(model, choose_time):
     N = model.N
@@ -84,7 +88,7 @@ def findYetPhi_SIS(i, Sit0 , Sothers_t0, N):
     # seriesTN : columns are time dimensions
     # function : find Y and Phi based on i
     # a) Delta test and Theta test
-    base_strings = get_base_strings(Sit0, Sothers_t0,0.35,0.5)
+    base_strings = get_base_strings(Sit0, Sothers_t0,i)
     # b) got Y and Phi
     # restrain nt
     nt = 0.8
@@ -129,7 +133,7 @@ def get_Edge_CP(Y,Phi,i):
 def findYetPhi_CP(i, Sit0 , Sothers_t0, N):
     # function : find Y and Phi based on i
     # a) Delta test and Theta test
-    base_strings = get_base_strings(Sit0, Sothers_t0,0.33,0.5) # N=500:BA:0.3,0.35;ER:
+    base_strings = get_base_strings(Sit0, Sothers_t0,i) # N=500:BA:0.3,0.35;ER:
 
     # b) got Y and Phi
     nt = 0.8  # restrain nt
@@ -164,11 +168,35 @@ def select_data(i, seriesMTN , t):
     
     return Sit0, Sothers_t0
 
-def get_base_strings(Sit0,Sothers_t0,Theta,Delta):
+def find_min_param(matrix, k):
+    # auto-get Theta and Delta
+    left, right = 0, 1  # 设定 theta Delta 的搜索范围为 [0, 1]
+    N = matrix.shape[0]
+    threshold = k * N * N  # 计算阈值
+    while right - left > 1e-5:  # 使用二分查找来缩小范围
+        mid = (left + right) / 2  # 计算中间值
+        count = np.sum(matrix < mid)  # 计算满足条件的元素个数
+        if count > threshold:
+            right = mid
+        else:
+            left = mid
+    return left  # 返回满足条件的最小 theta
+
+def get_base_strings(Sit0,Sothers_t0,i):
     normalized_hamming_matrix = cdist(Sothers_t0, Sothers_t0, metric='hamming')
-    # divide different base strings > Theta
-    # Theta = 0.25 #0.25 in SIS; 0.3 in CPs
-    # Delta = 0.45 #0.45 in SIS; 0.35 in CPs
+    global Theta,Delta
+    # auto-get Theta and Delta
+    if i<6:
+        global Thetas,Deltas
+        Theta = find_min_param(normalized_hamming_matrix, 0.0005)
+        Delta = find_min_param(normalized_hamming_matrix, 0.45)
+        Thetas.append(Theta)
+        Deltas.append(Delta)
+    if i == 6:
+        Theta = round(np.mean(Thetas), 4)
+        Delta = round(np.mean(Deltas), 4)
+        print('Theta:',Theta)
+        print('Delta:',Delta)
     base_strings = []
     base_string = []
     # divide the base_string.
@@ -182,7 +210,6 @@ def get_base_strings(Sit0,Sothers_t0,Theta,Delta):
         base_strings += [list(np.where(normalized_hamming_matrix[base_string[k]] < Delta)[0])]
     
     # base_strings = sorted(base_strings, key=lambda x: len(x),reverse=True)
-    
     return base_strings
 
 def normalization(data):
